@@ -26,4 +26,5 @@ urlpatterns = [
     path('kinds/', include('monster.urls.kind_urls')),
     path('lists/', include('monster.urls.list_urls')),
     path('media/uploads/monster_images/<str:file_name>', views.image_view),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]

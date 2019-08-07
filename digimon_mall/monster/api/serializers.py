@@ -30,6 +30,11 @@ class MonsterSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'image']
 
 class ListSerializer(serializers.ModelSerializer):
+    gener = GenerationSerializer()
+    attri = AttributeSerializer()
+    kind = KindsSerializer()
+    prev = MonsterSerializer()
+    monster = MonsterSerializer()
     class Meta:
         model = List
         fields = ['id', 'gener', 'attri', 'kind', 'prev', 'monster', 'skill', 'desc', 'price']
