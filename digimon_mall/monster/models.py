@@ -1,4 +1,5 @@
 from django.db import models
+from user.models import User
 
 class Generation(models.Model):  # 세대별
     title = models.CharField(max_length=100)
@@ -34,4 +35,10 @@ class List(models.Model):
     skill = models.TextField(null=True)
     desc = models.TextField()
     price = models.IntegerField(default=0)
+
+
+class UserMonster(models.Model):
+    user = models.ForeignKey(User, related_name='monsters', on_delete=models.CASCADE)
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    count = models.IntegerField(default=0)
 

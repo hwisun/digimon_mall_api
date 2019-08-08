@@ -5,7 +5,8 @@ from ..models import (
     Kinds,
     Attribute,
     Monster,
-    List
+    List,
+    UserMonster
 )
 
 
@@ -38,3 +39,11 @@ class ListSerializer(serializers.ModelSerializer):
     class Meta:
         model = List
         fields = ['id', 'gener', 'attri', 'kind', 'prev', 'monster', 'skill', 'desc', 'price']
+
+class UserMonsterSerializer(serializers.ModelSerializer):
+    list = ListSerializer()
+
+    class Meta:
+        model = UserMonster
+        fields = ['list', 'user', 'count']
+
