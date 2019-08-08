@@ -20,7 +20,7 @@ class MyitemsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        serializer = UserMonsterSerializer(request.monsters.items.all(), many=True)
+        serializer = UserMonsterSerializer(request.user.monsters.all(), many=True)
         return Response(serializer.data)
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
