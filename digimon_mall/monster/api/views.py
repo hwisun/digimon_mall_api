@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from ..models import (
     Generation,
@@ -19,6 +21,12 @@ from .serializers import (
 class GenerationViewSet(viewsets.ModelViewSet):
     queryset = Generation.objects.all()
     serializer_class = GenerationSerializer
+
+    @action(detail=True)
+    def mons(self, request, *args, **kwargs):
+        gener = self.get_object()
+        serializer = ListSerializer(gener.monsters.all(), many=True)
+        return Response(serializer.data)
 
 class KindsViewSet(viewsets.ModelViewSet):
     queryset = Kinds.objects.all()
