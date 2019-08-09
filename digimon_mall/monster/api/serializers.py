@@ -45,5 +45,5 @@ class UserMonsterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserMonster
-        fields = ['list', 'user', 'count']
+        fields = ['list', 'user', 'count', 'times']
 

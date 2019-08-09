@@ -2,6 +2,9 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction
+from rest_condition import Or, And
+
+from .permissions import IsPurchase, IsSafeMethod
 
 from ..models import (
     Generation,
@@ -46,7 +49,9 @@ class MonsterViewSet(viewsets.ModelViewSet):
 class ListViewSet(viewsets.ModelViewSet):
     queryset = List.objects.all()
     serializer_class = ListSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = (Or(IsSafeMethod,
+                             permissions.IsAdminUser,
+                             And(IsPurchase, permissions.IsAuthenticated)),)
 
     @action(detail=True, methods=['POST'])
     def purchase(self, request, *args, **kwargs):
@@ -60,6 +65,7 @@ class ListViewSet(viewsets.ModelViewSet):
             user_mon = UserMonster.objects.get(user=user, list=list)
         except UserMonster.DoesNotExist:
             user_mon = UserMonster(user=user, list=list)
+        # user_mon = UserMonster(user=user, list=list)
         user_mon.count += 1
         user_mon.save()
 
@@ -68,7 +74,7 @@ class ListViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'], url_path='purchase')
     @transaction.atomic()
-    def purchase_items(selfs, request, *args, **kwargs):
+    def purchase_mons(selfs, request, *args, **kwargs):
         mons = request.data['mons']
         user = request.user
 
@@ -86,6 +92,7 @@ class ListViewSet(viewsets.ModelViewSet):
                 user_mon = UserMonster.objects.get(user=user, list=list)
             except UserMonster.DoesNotExist:
                 user_mon = UserMonster(user=user, list=list)
+            # user_mon = UserMonster(user=user, list=list)
             user_mon.count += count
             user_mon.save()
         transaction.savepoint_commit(sid)

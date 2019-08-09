@@ -41,4 +41,4 @@ class UserMonster(models.Model):
     user = models.ForeignKey(User, related_name='monsters', on_delete=models.CASCADE)
     list = models.ForeignKey(List, on_delete=models.CASCADE)
     count = models.IntegerField(default=0)
-
+    times = models.DateTimeField(auto_now_add=True)
