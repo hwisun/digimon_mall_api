@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.db import transaction
 
 from ..models import (
     Generation,
@@ -27,7 +28,7 @@ class GenerationViewSet(viewsets.ModelViewSet):
     @action(detail=True)
     def mons(self, request, *args, **kwargs):
         gener = self.get_object()
-        serializer = ListSerializer(gener.monsters.all(), many=True)
+        serializer = ListSerializer(gener.monsters.all(), many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
 class KindsViewSet(viewsets.ModelViewSet):
@@ -62,5 +63,31 @@ class ListViewSet(viewsets.ModelViewSet):
         user_mon.count += 1
         user_mon.save()
 
-        serializer = UserMonsterSerializer(user.monsters.all(), many=True)
+        serializer = UserMonsterSerializer(user.monsters.all(), many=True, context=self.get_serializer_context())
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['POST'], url_path='purchase')
+    @transaction.atomic()
+    def purchase_items(selfs, request, *args, **kwargs):
+        mons = request.data['mons']
+        user = request.user
+
+        sid = transaction.savepoint()
+        for i in mons:
+            mons = mons.objects.get(id=i['mon_id'])
+            count = int(i['count'])
+
+            if mons.price * count > user.point:
+                transaction.savepoint_rollback(sid)
+                return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
+            user.point -= mons.price
+            user.save()
+            try:
+                user_mons = UserMonster.objects.get(user=user, item=item)
+            except UserMonster.DoesNotExist:
+                user_mons = UserMonster(user=user, item=item)
+            user_mons.count += count
+            user_mons.save()
+        transaction.savepoint_commit(sid)
+        serializer = UserMonsterSerializer(user.items.all(), many=True, context=self.get_serializer_context())
         return Response(serializer.data)

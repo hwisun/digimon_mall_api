@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -16,11 +17,12 @@ class MymeView(APIView):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
-class MyitemsView(APIView):
+class MyitemsView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserMonsterSerializer
 
     def get(self, request):
-        serializer = UserMonsterSerializer(request.user.monsters.all(), many=True)
+        serializer = self.get_serializer(request.user.monsters.all(), many=True)
         return Response(serializer.data)
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -30,5 +32,5 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True)
     def items(self, request, *args, **kwargs):
         user = self.get_object()
-        serializer = UserMonsterSerializer(user.monsters.all(), many=True)
+        serializer = UserMonsterSerializer(user.monsters.all(), many=True, context=self.get_serializer_context())
         return Response(serializer.data)
